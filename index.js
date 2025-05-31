@@ -4,6 +4,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
+const nodemailer = require('nodemailer');
 const knexConfig = require('./knexfile'); // Import Knex configuration
 const knex = require('knex')(knexConfig[process.env.NODE_ENV || 'development']); // Initialize Knex
 
@@ -14,6 +15,21 @@ const PORT = process.env.PORT || 3001;
 app.use(cors()); // Enable CORS for all routes (adjust origins in production)
 app.use(express.json()); // To parse JSON request bodies
 console.log(`Knex initialized for environment: ${process.env.NODE_ENV || 'development'}`);
+
+// --- Nodemailer Transporter Setup ---
+let transporter;
+if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  transporter = nodemailer.createTransport({
+    service: process.env.EMAIL_SERVICE || 'Gmail', // Default to Gmail if not specified
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+  console.log('Nodemailer transporter configured.');
+} else {
+  console.warn('Nodemailer not configured. EMAIL_USER or EMAIL_PASS missing in .env');
+}
 
 // --- Image Storage Location ---
 // This directory should be INSIDE your 'server' directory or accessible by it.
@@ -82,6 +98,54 @@ app.get('/api/images/:filename', (req, res) => {
     });
   } else {
     res.status(404).send('Image not found.');
+  }
+});
+
+// 3. Endpoint for contact form submissions
+app.post('/api/contact', async (req, res) => {
+  const { name, email, message } = req.body;
+
+  // Basic validation
+  if (!name || !email || !message) {
+    return res.status(400).json({ error: 'All fields (name, email, message) are required.' });
+  }
+
+  // Basic email format validation (can be more robust)
+  if (!/\S+@\S+\.\S+/.test(email)) {
+    return res.status(400).json({ error: 'Invalid email format.' });
+  }
+
+  try {
+    console.log('Contact form submission received:');
+    console.log(`Name: ${name}, Email: ${email}, Message: ${message}`);
+
+    if (!transporter) {
+      console.error('Nodemailer transporter not available. Cannot send email.');
+      // Still send a success to the client, but log the issue server-side
+      return res.status(200).json({ message: 'Form submitted (email sending disabled server-side).' });
+    }
+
+    const mailOptions = {
+      from: `"${name}" <${process.env.EMAIL_USER}>`, // Sender address (shows your email, but name is from form)
+      to: process.env.EMAIL_TO, // List of receivers
+      replyTo: email, // So you can reply directly to the user's email
+      subject: `New Contact Form Submission from ${name}`, // Subject line
+      text: `You have a new contact form submission:\n\nName: ${name}\nEmail: ${email}\nMessage:\n${message}`, // Plain text body
+      html: `<p>You have a new contact form submission:</p>
+             <ul>
+               <li><strong>Name:</strong> ${name}</li>
+               <li><strong>Email:</strong> ${email}</li>
+             </ul>
+             <p><strong>Message:</strong></p>
+             <p>${message.replace(/\n/g, '<br>')}</p>`, // HTML body
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log('Contact email sent successfully.');
+    res.status(200).json({ message: 'Message sent successfully! Thank you for reaching out.' });
+  } catch (error) {
+    console.error('Error processing contact form or sending email:', error);
+    res.status(500).json({ error: 'Server error while processing your request. Please try again later.' });
   }
 });
 
