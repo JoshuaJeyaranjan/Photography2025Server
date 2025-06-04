@@ -7,9 +7,14 @@ const cors = require('cors');
 const nodemailer = require('nodemailer');
 const knexConfig = require('./knexfile'); // Import Knex configuration
 const knex = require('knex')(knexConfig[process.env.NODE_ENV || 'development']); // Initialize Knex
-
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// --- Import Routes ---
+const galleryRoutes = require('./routes/galleryRoutes');
+const contactRoutes = require('./routes/contactRoutes');
+const stripeRoutes = require('./routes/stripeRoutes');
 
 // --- Middleware ---
 app.use(cors()); // Enable CORS for all routes (adjust origins in production)
@@ -43,110 +48,42 @@ if (!fs.existsSync(imagesDirectory)) {
   // e.g., server/public/images/portrait_example_1.jpg
 }
 
-// --- API Endpoints ---
-
-// 1. Endpoint to get image metadata from the database
-app.get('/api/gallery', async (req, res) => {
-  const category = req.query.category; // e.g., /api/gallery?category=portrait
-
-  try {
-    let queryBuilder = knex('images').select('id', 'filename', 'title', 'description', 'category');
-
-    if (category) {
-      queryBuilder = queryBuilder.where('category', category);
-    }
-
-    queryBuilder = queryBuilder.orderBy('uploaded_at', 'desc'); // Or any other order you prefer
-
-    const rows = await queryBuilder;
-
-    const imageObjects = rows.map(row => ({
-      id: row.id,
-      title: row.title || '', // Ensure title is not null
-      description: row.description,
-      category: row.category,
-      filename: row.filename,
-      // Construct the URL the client will use to fetch the actual image
-      url: `/api/images/${row.filename}`
-    }));
-    res.json(imageObjects);
-  } catch (error) {
-    console.error('Error fetching images from database:', error);
-    res.status(500).send('Error retrieving image gallery.');
-  }
+// --- Middleware to attach dependencies to req object ---
+app.use((req, res, next) => {
+  req.db = knex;
+  req.transporter = transporter;
+  req.stripe = stripe;
+  req.imagesDirectory = imagesDirectory;
+  next();
 });
 
-// 2. Endpoint to serve a specific image file
-app.get('/api/images/:filename', (req, res) => {
-  const { filename } = req.params;
-  const imagePath = path.join(imagesDirectory, filename);
-
-  // Basic security: prevent directory traversal
-  if (filename.includes('..')) {
-      return res.status(400).send('Invalid filename.');
-  }
-
-  if (fs.existsSync(imagePath)) {
-    res.sendFile(imagePath, (err) => {
-      if (err) {
-        console.error('Error sending file:', err);
-        // Check if headers were already sent, common issue with res.sendFile
-        if (!res.headersSent) {
-          res.status(500).send('Error serving the image.');
-        }
-      }
-    });
-  } else {
-    res.status(404).send('Image not found.');
-  }
+// --- Test Route ---
+app.get("/", (req, res) => {
+  res.send("Welcome to the Photography API");
 });
 
-// 3. Endpoint for contact form submissions
-app.post('/api/contact', async (req, res) => {
-  const { name, email, message } = req.body;
+// --- Use API Routes ---
+app.use('/api/gallery', galleryRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/stripe', stripeRoutes);
 
-  // Basic validation
-  if (!name || !email || !message) {
-    return res.status(400).json({ error: 'All fields (name, email, message) are required.' });
-  }
+// --- Catch 404s and forward to error handler ---
+// This should be after all your specific routes
+app.use((req, res, next) => {
+  // Create an error object for 404s to be handled by the global error handler
+  const err = new Error(`The requested URL ${req.originalUrl} was not found on this server.`);
+  err.status = 404;
+  next(err);
+});
 
-  // Basic email format validation (can be more robust)
-  if (!/\S+@\S+\.\S+/.test(email)) {
-    return res.status(400).json({ error: 'Invalid email format.' });
-  }
-
-  try {
-    console.log('Contact form submission received:');
-    console.log(`Name: ${name}, Email: ${email}, Message: ${message}`);
-
-    if (!transporter) {
-      console.error('Nodemailer transporter not available. Cannot send email.');
-      // Still send a success to the client, but log the issue server-side
-      return res.status(200).json({ message: 'Form submitted (email sending disabled server-side).' });
-    }
-
-    const mailOptions = {
-      from: `"${name}" <${process.env.EMAIL_USER}>`, // Sender address (shows your email, but name is from form)
-      to: process.env.EMAIL_TO, // List of receivers
-      replyTo: email, // So you can reply directly to the user's email
-      subject: `New Contact Form Submission from ${name}`, // Subject line
-      text: `You have a new contact form submission:\n\nName: ${name}\nEmail: ${email}\nMessage:\n${message}`, // Plain text body
-      html: `<p>You have a new contact form submission:</p>
-             <ul>
-               <li><strong>Name:</strong> ${name}</li>
-               <li><strong>Email:</strong> ${email}</li>
-             </ul>
-             <p><strong>Message:</strong></p>
-             <p>${message.replace(/\n/g, '<br>')}</p>`, // HTML body
-    };
-
-    await transporter.sendMail(mailOptions);
-    console.log('Contact email sent successfully.');
-    res.status(200).json({ message: 'Message sent successfully! Thank you for reaching out.' });
-  } catch (error) {
-    console.error('Error processing contact form or sending email:', error);
-    res.status(500).json({ error: 'Server error while processing your request. Please try again later.' });
-  }
+// --- Global Error Handler ---
+// This middleware must have four arguments to be recognized as an error handler by Express.
+app.use((err, req, res, next) => {
+  console.error('Global error handler caught:', err.stack);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal Server Error',
+    details: err.details || (process.env.NODE_ENV === 'development' ? err.stack : undefined)
+  });
 });
 
 // --- Start the Server ---
