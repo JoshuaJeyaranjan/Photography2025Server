@@ -22,6 +22,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const allowedOrigins = [
   'http://localhost:5173', // Vite dev server
   'https://joshuajeyphotography.com', // Your deployed site
+  'https://joshuajeyphotographycom.netlify.app'
 ];
 
 app.use(cors({
