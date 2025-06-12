@@ -15,6 +15,7 @@ const PORT = process.env.PORT || 3001;
 const galleryRoutes = require('./routes/galleryRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const stripeRoutes = require('./routes/stripeRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 // --- Middleware ---
 app.use(cors()); // Enable CORS for all routes (adjust origins in production)
@@ -66,6 +67,10 @@ app.get("/", (req, res) => {
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/admin', adminRoutes);
+
+// --- Serve static files from the public directory ---
+app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
 
 // --- Catch 404s and forward to error handler ---
 // This should be after all your specific routes
@@ -90,7 +95,8 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`SERVER RUNNING on http://localhost:${PORT}`);
   console.log(`Images are expected in: ${imagesDirectory}`);
-  console.log(`Access an image via: http://localhost:${PORT}/api/images/<filename.ext>`);
+  console.log(`Access an image via: http://localhost:${PORT}/images/<filename.ext>`);
   console.log(`Access the gallery list via: http://localhost:${PORT}/api/gallery`);
   console.log(`Access portraits via: http://localhost:${PORT}/api/gallery?category=portrait`);
+  console.log(`Admin routes available at: http://localhost:${PORT}/api/admin`);
 });
