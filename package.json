@@ -1,0 +1,25 @@
+{
+  "name": "photography2025server",
+  "version": "1.0.0",
+  "description": "Backend for Joshua Jey Photography Portfolio",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "Joshua Jeyaranjan",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "heroku": "^10.10.0",
+    "knex": "^2.4.2",
+    "nodemailer": "^6.9.1",
+    "stripe": "^12.8.0"
+  }
+}
