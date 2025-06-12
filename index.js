@@ -121,5 +121,10 @@ app.listen(PORT, () => {
   console.log(`Access the gallery list via: http://localhost:${PORT}/api/gallery`);
   console.log(`Access portraits via: http://localhost:${PORT}/api/gallery?category=portrait`);
   console.log(`Admin routes available at: http://localhost:${PORT}/api/admin`);
-  console.log("connecting to db at", process.env.DB_HOST, process.env.DB_USER, process.env.DB_NAME, 'on port', process.env.DB_PORT);
+  console.log('Connecting to DB:', {
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    db: process.env.DB_NAME,
+    port: process.env.DB_PORT,
+  });
 });
