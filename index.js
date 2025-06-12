@@ -10,6 +10,7 @@ const knex = require('knex')(knexConfig[process.env.NODE_ENV || 'development']);
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const app = express();
 const PORT = process.env.PORT || 3001;
+const helmet = require('helmet');
 
 // --- Import Routes ---
 const galleryRoutes = require('./routes/galleryRoutes');
@@ -18,9 +19,29 @@ const stripeRoutes = require('./routes/stripeRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 // --- Middleware ---
-app.use(cors()); // Enable CORS for all routes (adjust origins in production)
-app.use(express.json()); // To parse JSON request bodies
-console.log(`Knex initialized for environment: ${process.env.NODE_ENV || 'development'}`);
+const allowedOrigins = [
+  'http://localhost:5173', // Vite dev server
+  'https://joshuajeyphotography.com', // Your deployed site
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error(`CORS policy: No access for origin ${origin}`), false);
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
+}));
+
+app.use(express.json()); 
+
+app.use(helmet());
+
 
 // --- Nodemailer Transporter Setup ---
 let transporter;
