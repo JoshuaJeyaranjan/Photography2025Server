@@ -114,10 +114,12 @@ app.use((err, req, res, next) => {
 
 // --- Start the Server ---
 app.listen(PORT, () => {
+
   console.log(`SERVER RUNNING on http://localhost:${PORT}`);
   console.log(`Images are expected in: ${imagesDirectory}`);
   console.log(`Access an image via: http://localhost:${PORT}/images/<filename.ext>`);
   console.log(`Access the gallery list via: http://localhost:${PORT}/api/gallery`);
   console.log(`Access portraits via: http://localhost:${PORT}/api/gallery?category=portrait`);
   console.log(`Admin routes available at: http://localhost:${PORT}/api/admin`);
+  console.log("connecting to db at", process.env.DB_HOST, process.env.DB_USER, process.env.DB_NAME, 'on port', process.env.DB_PORT);
 });
