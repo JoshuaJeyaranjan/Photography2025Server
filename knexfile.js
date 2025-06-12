@@ -1,9 +1,7 @@
-// Update with your config settings.
-
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
-require('dotenv').config({ path: './.env' }); // Ensure .env is loaded
+require('dotenv').config({ path: './.env' });
 
 module.exports = {
 
@@ -11,10 +9,12 @@ module.exports = {
     client: 'mysql2',
     connection: {
       host: process.env.DB_HOST,
+      port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       charset: 'utf8'
+      // SSL typically not needed in development if local DB
     }
   },
 
@@ -22,10 +22,14 @@ module.exports = {
     client: 'mysql2',
     connection: {
       host: process.env.DB_HOST,
+      port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      charset: 'utf8'
+      charset: 'utf8',
+      ssl: {
+        rejectUnauthorized: true  // Enforces SSL connection and validates certificate
+      }
     }
   },
 
@@ -33,10 +37,14 @@ module.exports = {
     client: 'mysql2',
     connection: {
       host: process.env.DB_HOST,
+      port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      charset: 'utf8'
+      charset: 'utf8',
+      ssl: {
+        rejectUnauthorized: true
+      }
     }
   }
 
