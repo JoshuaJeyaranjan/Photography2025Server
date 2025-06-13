@@ -82,4 +82,32 @@ router.get('/images/:filename', (req, res) => {
   }
 });
 
+// GET /api/gallery/:id
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+  const knex = req.db;
+
+  try {
+    const image = await knex('images')
+      .select('id', 'filename', 'title', 'description', 'category')
+      .where('id', id)
+      .first();
+
+    if (!image) {
+      return res.status(404).json({ error: 'Image not found' });
+    }
+
+    const folder = getR2Folder(image.filename);
+
+    res.json({
+      ...image,
+      url: `https://r2-image-proxy.r2-image-proxy.workers.dev/${folder}/${encodeURIComponent(image.filename)}`
+    });
+  } catch (error) {
+    console.error('Error fetching image:', error);
+    res.status(500).json({ error: 'Failed to retrieve image.' });
+  }
+});
+
+
 module.exports = router;
