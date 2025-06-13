@@ -4,7 +4,14 @@ const fs = require('fs');
 const router = express.Router();
 
 // Helper to build Cloudflare R2 URLs (not needed if fully moved to R2)
-const R2_BASE_URL = 'https://assets.joshuajeyphotography.com/portraits';
+const R2_BASE_URL = 'https://r2-image-proxy.r2-image-proxy.workers.dev';
+
+function getR2Folder(filename) {
+  if (filename.startsWith('portrait_')) return 'portraits';
+  if (filename === 'me.jpg') return 'me';
+  if (filename.endsWith('.svg')) return 'logo';
+  return 'misc'; // default fallback if needed
+}
 
 // GET /api/gallery
 router.get('/', async (req, res) => {
@@ -22,14 +29,19 @@ router.get('/', async (req, res) => {
     queryBuilder = queryBuilder.orderBy('uploaded_at', 'desc');
     const rows = await queryBuilder;
 
-    const imageObjects = rows.map(row => ({
-      id: row.id,
-      title: row.title || '',
-      description: row.description,
-      category: row.category,
-      filename: row.filename,
-      url: `${R2_BASE_URL}/${encodeURIComponent(row.filename)}`
-    }));
+    const imageObjects = rows.map(row => {
+      const folder = getR2Folder(row.filename);
+    
+      return {
+        id: row.id,
+        title: row.title || '',
+        description: row.description,
+        category: row.category,
+        filename: row.filename,
+        url: `https://r2-image-proxy.r2-image-proxy.workers.dev/${folder}/${encodeURIComponent(row.filename)}`
+      };
+    });
+    
 
     res.json(imageObjects);
   } catch (error) {
