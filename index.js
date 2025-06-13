@@ -1,4 +1,4 @@
-// server/server.js
+//index.js
 require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const path = require('path');
@@ -25,21 +25,7 @@ const allowedOrigins = [
   'https://joshuajeyphotographycom.netlify.app'
 ];
 
-router.use('/images/:filename', (req, res, next) => {
-  // Allow your frontend domain
-  res.setHeader('Access-Control-Allow-Origin', 'https://joshuajeyphotographycom.netlify.app');
 
-  // Allow credentials if needed
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-
-  // Allow cross-origin image loading
-  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-
-  // Relax Content Security Policy for images
-  res.setHeader('Content-Security-Policy', "img-src 'self' https://joshuajeyphotographycom.netlify.app data:;");
-
-  next();
-});
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -108,7 +94,7 @@ app.use('/api/stripe', stripeRoutes);
 app.use('/api/admin', adminRoutes);
 
 // --- Serve static files from the public directory ---
-app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
+// app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
 
 // --- Catch 404s and forward to error handler ---
 // This should be after all your specific routes
@@ -144,4 +130,5 @@ app.listen(PORT, () => {
     db: process.env.DB_NAME,
     port: process.env.DB_PORT,
   });
+  console.log(`Backend base URL: ${process.env.BASE_URL || `http://localhost:${PORT}`}`);
 });
