@@ -25,6 +25,22 @@ const allowedOrigins = [
   'https://joshuajeyphotographycom.netlify.app'
 ];
 
+router.use('/images/:filename', (req, res, next) => {
+  // Allow your frontend domain
+  res.setHeader('Access-Control-Allow-Origin', 'https://joshuajeyphotographycom.netlify.app');
+
+  // Allow credentials if needed
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+  // Allow cross-origin image loading
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+
+  // Relax Content Security Policy for images
+  res.setHeader('Content-Security-Policy', "img-src 'self' https://joshuajeyphotographycom.netlify.app data:;");
+
+  next();
+});
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl)
