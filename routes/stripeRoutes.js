@@ -87,6 +87,7 @@ router.post('/create-checkout-session', async (req, res) => {
 
   } catch (error) {
     console.error('Stripe session creation failed:', error.stack || error.message || error);
+    console.dir(error, { depth: null });
 
     res.status(500).json({ error: 'Failed to create payment session.', details: error.message || 'no additional details' });
   }
