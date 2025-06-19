@@ -1,4 +1,4 @@
-// /src/db.js
+// db.js
 const knex = require('knex');
 
 const db = knex({
@@ -10,7 +10,7 @@ const db = knex({
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE_NAME,
     ssl: {
-      rejectUnauthorized: true,
+      rejectUnauthorized: true, // Needed for PlanetScale
     },
   },
 });
