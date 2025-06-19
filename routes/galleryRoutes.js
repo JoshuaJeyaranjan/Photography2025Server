@@ -38,6 +38,7 @@ router.get('/', async (req, res) => {
         title: row.title || '',
         description: row.description,
         category: row.category,
+        price: row.price,
         filename: row.filename,
         url: `https://r2-image-proxy.r2-image-proxy.workers.dev/${folder}/${encodeURIComponent(row.filename)}`
       };
