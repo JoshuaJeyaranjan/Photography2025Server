@@ -131,4 +131,6 @@ app.listen(PORT, () => {
     port: process.env.DB_PORT,
   });
   console.log(`Backend base URL: ${process.env.BASE_URL || `http://localhost:${PORT}`}`);
+
+
 });
