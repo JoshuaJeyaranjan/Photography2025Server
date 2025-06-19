@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db'); // adjust if needed
+const db = require('../knexfile'); // adjust if needed
 
 // POST /api/stripe/create-checkout-session
 router.post('/create-checkout-session', async (req, res) => {
