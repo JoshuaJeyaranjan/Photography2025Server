@@ -8,7 +8,7 @@ const R2_BASE_URL = 'https://r2-image-proxy.r2-image-proxy.workers.dev';
 
 function getR2Folder(filename) {
   if (filename.startsWith('portrait_')) return 'portraits';
-  if (filename.startsWith('prints_')) return 'prints';
+  if (filename.startsWith('print_')) return 'prints';
   if (filename === 'me.jpg') return 'me';
   if (filename.endsWith('.svg')) return 'logo';
   return 'misc'; // default fallback if needed
