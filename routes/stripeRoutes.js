@@ -5,6 +5,7 @@ const db = require('../db'); // adjust if needed
 // POST /api/stripe/create-checkout-session
 router.post('/create-checkout-session', async (req, res) => {
   console.log('recieved checkout request:', req.body );
+  console.log('incoming itesms:', items)
   const { items, customer } = req.body;
   const stripe = req.stripe;
 
@@ -22,7 +23,7 @@ router.post('/create-checkout-session', async (req, res) => {
     let totalAmount = 0;
 
     for (const item of items) {
-      const dbImage = await db('images').where({ id: item.id }).first();
+      const dbImage = await db('images').select('id', 'price', 'title', 'filename').where({ id: item.id }).first();
 
       if (!dbImage) {
         return res.status(400).json({ error: `Image not found for ID: ${item.id}` });
