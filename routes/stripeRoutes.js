@@ -4,6 +4,7 @@ const db = require('../db'); // adjust if needed
 
 // POST /api/stripe/create-checkout-session
 router.post('/create-checkout-session', async (req, res) => {
+  console.log('recieved checkout request:', req.body );
   const { items, customer } = req.body;
   const stripe = req.stripe;
 
