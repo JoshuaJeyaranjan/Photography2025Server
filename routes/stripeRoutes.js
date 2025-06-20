@@ -134,4 +134,34 @@ router.get("/test", async (req, res) => {
   }
 });
 
+router.get("/session-test", async (req, res) => {
+  try {
+    const stripe = req.stripe;
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Test Print",
+            },
+            unit_amount: 1000, // $10.00
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      customer_email: "test@example.com",
+      success_url: "https://example.com/success",
+      cancel_url: "https://example.com/cancel",
+    });
+
+    res.json({ sessionId: session.id });
+  } catch (err) {
+    console.error("Session test failed:", err.message || err);
+    res.status(500).json({ error: "Failed to create test session", details: err.message });
+  }
+});
+
 module.exports = router;
