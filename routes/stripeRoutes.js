@@ -111,28 +111,27 @@ router.post("/create-checkout-session", async (req, res) => {
         details: error.message || "no additional details",
       });
   }
-  // GET /api/stripe/test
+  
+}
+
+);
+// GET /api/stripe/test
 router.get("/test", async (req, res) => {
   try {
     const stripe = req.stripe;
-
-    // Attempt a harmless Stripe API request
     const charges = await stripe.charges.list({ limit: 1 });
-
     res.status(200).json({
       success: true,
       message: "Stripe API connectivity and authentication confirmed.",
       data: charges.data,
     });
   } catch (error) {
-    console.error("Stripe connectivity test failed:", error.message);
     res.status(500).json({
       success: false,
       error: "Failed to connect to Stripe.",
       details: error.message,
     });
   }
-});
 });
 
 module.exports = router;
