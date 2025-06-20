@@ -3,8 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const router = express.Router();
 
-// Helper to build Cloudflare R2 URLs (not needed if fully moved to R2)
-const R2_BASE_URL = 'https://r2-image-proxy.r2-image-proxy.workers.dev';
+const BUCKET_URL = process.env.BUCKET_URL || 'https://media.joshuajeyphotography.com'
 
 function getR2Folder(filename) {
   if (filename.startsWith('portrait_')) return 'portraits';
@@ -40,7 +39,7 @@ router.get('/', async (req, res) => {
         category: row.category,
         price: row.price,
         filename: row.filename,
-        url: `https://r2-image-proxy.r2-image-proxy.workers.dev/${folder}/${encodeURIComponent(row.filename)}`
+        url: `${BUCKET_URL}/${folder}/${encodeURIComponent(row.filename)}`
       };
     });
     
@@ -103,7 +102,7 @@ router.get('/:id', async (req, res) => {
 
     res.json({
       ...image,
-      url: `https://r2-image-proxy.r2-image-proxy.workers.dev/${folder}/${encodeURIComponent(image.filename)}`
+      url: `${BUCKET_URL}/${folder}/${encodeURIComponent(image.filename)}`
     });
   } catch (error) {
     console.error('Error fetching image:', error);
