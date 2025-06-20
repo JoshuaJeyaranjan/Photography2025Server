@@ -116,7 +116,15 @@ app.use((err, req, res, next) => {
     details: err.details || (process.env.NODE_ENV === 'development' ? err.stack : undefined)
   });
 });
-
+// In index.js or routes file
+app.get("/api/test-stripe", async (req, res) => {
+  try {
+    const response = await fetch("https://api.stripe.com");
+    res.status(200).json({ status: response.status });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 // --- Start the Server ---
 app.listen(PORT, () => {
 
