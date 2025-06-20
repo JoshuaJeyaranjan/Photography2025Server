@@ -11,7 +11,6 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const app = express();
 const PORT = process.env.PORT || 3001;
 const helmet = require('helmet');
-import fetch from 'node-fetch'; // If using ES modules
 
 
 // --- Import Routes ---
@@ -96,22 +95,7 @@ app.use('/api/gallery', galleryRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/admin', adminRoutes);
-// Temporary route to test outbound connectivity to Stripe from the Docker container
-app.get("/api/test-stripe", async (req, res) => {
-  try {
-    const response = await fetch("https://api.stripe.com");
-    res.status(200).json({
-      message: "Connection to Stripe successful.",
-      statusCode: response.status,
-    });
-  } catch (error) {
-    console.error("Stripe connectivity error:", error);
-    res.status(500).json({
-      message: "Failed to connect to Stripe.",
-      error: error.message,
-    });
-  }
-});
+
 // --- Serve static files from the public directory ---
 // app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
 
