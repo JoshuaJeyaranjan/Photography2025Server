@@ -11,6 +11,8 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const app = express();
 const PORT = process.env.PORT || 3001;
 const helmet = require('helmet');
+import fetch from 'node-fetch'; // If using ES modules
+
 
 // --- Import Routes ---
 const galleryRoutes = require('./routes/galleryRoutes');
@@ -94,7 +96,22 @@ app.use('/api/gallery', galleryRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/admin', adminRoutes);
-
+// Temporary route to test outbound connectivity to Stripe from the Docker container
+app.get("/api/test-stripe", async (req, res) => {
+  try {
+    const response = await fetch("https://api.stripe.com");
+    res.status(200).json({
+      message: "Connection to Stripe successful.",
+      statusCode: response.status,
+    });
+  } catch (error) {
+    console.error("Stripe connectivity error:", error);
+    res.status(500).json({
+      message: "Failed to connect to Stripe.",
+      error: error.message,
+    });
+  }
+});
 // --- Serve static files from the public directory ---
 // app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
 
@@ -116,15 +133,7 @@ app.use((err, req, res, next) => {
     details: err.details || (process.env.NODE_ENV === 'development' ? err.stack : undefined)
   });
 });
-// In index.js or routes file
-app.get("/api/test-stripe", async (req, res) => {
-  try {
-    const response = await fetch("https://api.stripe.com");
-    res.status(200).json({ status: response.status });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+
 // --- Start the Server ---
 app.listen(PORT, () => {
 
@@ -141,6 +150,5 @@ app.listen(PORT, () => {
     port: process.env.DB_PORT,
   });
   console.log(`Backend base URL: ${process.env.BASE_URL || `http://localhost:${PORT}`}`);
-
-
+  console.log("Stripe key is", process.env.STRIPE_SECRET_KEY?.slice(0, 5));
 });
