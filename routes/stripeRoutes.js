@@ -4,7 +4,10 @@ const db = require("../db"); // adjust if needed
 
 // POST /api/stripe/create-checkout-session
 router.post("/create-checkout-session", async (req, res) => {
-  console.log("recieved checkout request:", req.body);
+  console.log("=== STRIPE SESSION START ===");
+  console.log("Raw body:", JSON.stringify(req.body, null, 2));
+  console.log("Customer:", req.body.customer);
+  console.log("Items:", req.body.items);
   const { items, customer } = req.body;
   const stripe = req.stripe;
 
