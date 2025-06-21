@@ -5,8 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
-const knexConfig = require('./knexfile'); // Import Knex configuration
-const knex = require('knex')(knexConfig[process.env.NODE_ENV || 'development']); // Initialize Knex
+const db = require('./db')
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -78,7 +77,7 @@ if (!fs.existsSync(imagesDirectory)) {
 
 // --- Middleware to attach dependencies to req object ---
 app.use((req, res, next) => {
-  req.db = knex;
+  req.db = db;
   req.transporter = transporter;
   req.stripe = stripe;
   req.imagesDirectory = imagesDirectory;
