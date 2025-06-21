@@ -8,7 +8,11 @@ router.post("/create-checkout-session", async (req, res) => {
   console.log("Raw body:", JSON.stringify(req.body, null, 2));
   console.log("Customer:", req.body.customer);
   console.log("Items:", req.body.items);
-  const { items, customer } = req.body;
+  // const { items, customer } = req.body;
+  const items = [
+    { id: 17, quantity: 1 }  // use a known valid image ID
+  ];
+  const customer = { name: "Test User", email: "test@example.com" };
   const stripe = req.stripe;
 
   if (!items || !Array.isArray(items) || items.length === 0) {
