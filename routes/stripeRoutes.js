@@ -8,11 +8,8 @@ router.post("/create-checkout-session", async (req, res) => {
   console.log("Raw body:", JSON.stringify(req.body, null, 2));
   console.log("Customer:", req.body.customer);
   console.log("Items:", req.body.items);
-  // const { items, customer } = req.body;
-  const items = [
-    { id: 17, quantity: 1 }  // use a known valid image ID
-  ];
-  const customer = { name: "Test User", email: "test@example.com" };
+  const { items, customer } = req.body;
+
   const stripe = req.stripe;
 
   if (!items || !Array.isArray(items) || items.length === 0) {
@@ -76,10 +73,10 @@ router.post("/create-checkout-session", async (req, res) => {
       mode: "payment",
       customer_email: customer.email,
       success_url: `${
-        process.env.CLIENT_URL || "http://localhost:5173"
+        process.env.CLIENT_URL || "https://joshuajeyphotography.com"
       }/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${
-        process.env.CLIENT_URL || "http://localhost:5173"
+        process.env.CLIENT_URL || "https://joshuajeyphotography.com"
       }/payment-cancelled`,
     });
 
