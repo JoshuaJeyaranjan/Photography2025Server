@@ -119,19 +119,5 @@ app.use((err, req, res, next) => {
 
 // --- Start the Server ---
 app.listen(PORT, () => {
-
   console.log(`SERVER RUNNING on http://localhost:${PORT}`);
-  console.log(`Images are expected in: ${imagesDirectory}`);
-  console.log(`Access an image via: http://localhost:${PORT}/images/<filename.ext>`);
-  console.log(`Access the gallery list via: http://localhost:${PORT}/api/gallery`);
-  console.log(`Access portraits via: http://localhost:${PORT}/api/gallery?category=portrait`);
-  console.log(`Admin routes available at: http://localhost:${PORT}/api/admin`);
-  console.log('Connecting to DB:', {
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    db: process.env.DB_NAME,
-    port: process.env.DB_PORT,
-  });
-  console.log(`Backend base URL: ${process.env.BASE_URL || `http://localhost:${PORT}`}`);
-  console.log("Stripe key is", process.env.STRIPE_SECRET_KEY?.slice(0, 5));
 });
