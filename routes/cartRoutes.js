@@ -1,7 +1,7 @@
 / routes/cartRoutes.js
 const express = require('express');
 const db = require('../db');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/authMiddleware');
 const router = express.Router();
 
 // GET /api/cart → fetch user's cart
