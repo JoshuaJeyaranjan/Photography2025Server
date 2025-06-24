@@ -3,7 +3,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const db = require('../db');
-const { authenticateToken } = require('../middleware/authMiddleware');
+const authenticateJWT = require('../middleware/authenticateJWT');
 
 const router = express.Router();
 
@@ -11,7 +11,7 @@ const router = express.Router();
 // — returns the currently-authenticated user
 router.get(
   '/me',
-  authenticateToken,
+  authenticateJWT,
   async (req, res) => {
     try {
       const u = await db('users')
