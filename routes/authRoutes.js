@@ -16,7 +16,7 @@ router.get(
     try {
       const u = await db('users')
         .select('id', 'name', 'email')
-        .where({ id: req.user.userId })
+        .where({ id: req.userId })
         .first();
       if (!u) return res.status(404).json({ error: 'User not found.' });
       res.json({ user: u });
