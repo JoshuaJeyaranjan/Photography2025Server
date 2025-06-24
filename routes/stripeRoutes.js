@@ -9,7 +9,7 @@ router.post("/create-checkout-session", async (req, res) => {
 
   const { items, customer } = req.body;
   const stripe = req.stripe;
-  const transporter = req.transporter;
+  
 
   if (!items?.length || !customer?.name || !customer?.email) {
     return res.status(400).json({ error: "Invalid input." });
@@ -40,7 +40,9 @@ router.post("/create-checkout-session", async (req, res) => {
 
       const price = parseFloat(dbSize.price);
       const quantity = parseInt(item.quantity || 1);
-      totalAmount += price * quantity;
+      const itemTotal = price * quantity;
+const taxAmount = itemTotal * 0.13;
+totalAmount += itemTotal + taxAmount;
 
       validatedItems.push({
         image_id: dbImage.id,
@@ -50,6 +52,8 @@ router.post("/create-checkout-session", async (req, res) => {
         item_name: `${dbImage.title || dbImage.filename} (${dbSize.label})`,
       });
     }
+    const shippingCost = parseInt(req.body.shipping_cost || 0); // In cents
+    totalAmount += shippingCost / 100;
 
     const line_items = validatedItems.map((item) => ({
       price_data: {
@@ -72,7 +76,6 @@ router.post("/create-checkout-session", async (req, res) => {
         { shipping_rate: req.body.shipping_rate },
       ],
       customer_email: customer.email,
-      automatic_tax: { enabled: true },
       shipping_address_collection: {
         allowed_countries: ['US', 'CA'], // Add others as needed
       },
