@@ -1,4 +1,4 @@
-/ routes/cartRoutes.js
+
 const express = require('express');
 const db = require('../db');
 const authenticateJWT = require('../middleware/authenticateJWT');
