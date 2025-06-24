@@ -17,6 +17,8 @@ const galleryRoutes = require('./routes/galleryRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const stripeRoutes = require('./routes/stripeRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const printRoutes = require('./routes/printRoutes');
+
 
 // --- Middleware ---
 const allowedOrigins = [
@@ -94,6 +96,8 @@ app.use('/api/gallery', galleryRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/print', printRoutes);
+
 
 // --- Serve static files from the public directory ---
 // app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
