@@ -61,17 +61,22 @@ router.post("/create-checkout-session", async (req, res) => {
       quantity: item.quantity,
     }));
 
+    if (!req.body.shipping_rate) {
+      return res.status(400).json({ error: "Missing shipping rate selection." });
+    }
+    
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items,
       mode: "payment",
       shipping_options: [
-        { shipping_rate: process.env.INTERNATIONAL_SHIPPING },
-        { shipping_rate: process.env.EXPRESS_SHIPPING },
-        { shipping_rate: process.env.STANDARD_SHIPPING },
+        { shipping_rate: req.body.shipping_rate },
       ],
       customer_email: customer.email,
       automatic_tax: { enabled: true },
+      shipping_address_collection: {
+        allowed_countries: ['US', 'CA'], // Add others as needed
+      },
       success_url: `${process.env.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.CLIENT_URL}/payment-cancelled`,
     });
