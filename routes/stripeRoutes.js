@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
-const generateInvoice = require("../utils/invoice"); // ✅ separate file
 const fs = require("fs");
 
 router.post("/create-checkout-session", async (req, res) => {
@@ -100,22 +99,6 @@ router.post("/create-checkout-session", async (req, res) => {
       });
     }
 
-    const invoicePath = `/tmp/Invoice-${orderId}.pdf`;
-    await generateInvoice({
-      id: orderId,
-      customer_name: customer.name,
-      customer_email: customer.email,
-      items: validatedItems,
-      total_amount: totalAmount,
-    }, invoicePath);
-
-    await transporter.sendMail({
-      from: `"Joshua Jey Photography" <${process.env.EMAIL_USER}>`,
-      to: customer.email,
-      subject: "Your Order & Invoice",
-      html: `<p>Thanks again for your order! Attached is your invoice.</p>`,
-      attachments: [{ filename: `Invoice-${orderId}.pdf`, path: invoicePath }],
-    });
 
     res.json({ sessionId: session.id });
   } catch (error) {
@@ -125,6 +108,67 @@ router.post("/create-checkout-session", async (req, res) => {
       details: error.message,
     });
   }
+});
+
+router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  const stripe = req.stripe;
+  let event;
+
+  try {
+    const sig = req.headers['stripe-signature'];
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.error("Webhook signature verification failed:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+
+    try {
+      // Fetch order from DB by Stripe session ID
+      const order = await db("orders")
+        .where({ stripe_session_id: session.id })
+        .first();
+
+      if (!order) {
+        throw new Error(`No order found for session: ${session.id}`);
+      }
+
+      // Update order to "completed"
+      await db("orders")
+        .where({ id: order.id })
+        .update({ order_status: "completed" });
+
+      // Get order items
+      const items = await db("order_items")
+        .where({ order_id: order.id });
+
+      // Generate and send invoice
+      const invoicePath = `/tmp/Invoice-${order.id}.pdf`;
+      await generateInvoice({
+        id: order.id,
+        customer_name: order.customer_name,
+        customer_email: order.customer_email,
+        items,
+        total_amount: order.total_amount,
+      }, invoicePath);
+
+      await req.transporter.sendMail({
+        from: `"Joshua Jey Photography" <${process.env.EMAIL_USER}>`,
+        to: order.customer_email,
+        subject: "Your Order & Invoice",
+        html: `<p>Thanks again for your order! Attached is your invoice.</p>`,
+        attachments: [{ filename: `Invoice-${order.id}.pdf`, path: invoicePath }],
+      });
+
+      console.log(`✅ Invoice sent for order ${order.id}`);
+    } catch (err) {
+      console.error("❌ Failed to process webhook:", err.message);
+    }
+  }
+
+  res.json({ received: true });
 });
 
 

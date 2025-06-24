@@ -20,6 +20,8 @@ const adminRoutes = require('./routes/adminRoutes');
 const printRoutes = require('./routes/printRoutes');
 
 
+
+
 // --- Middleware ---
 const allowedOrigins = [
   'http://localhost:5173', // Vite dev server
@@ -97,7 +99,6 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/print', printRoutes);
-
 
 // --- Serve static files from the public directory ---
 // app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
