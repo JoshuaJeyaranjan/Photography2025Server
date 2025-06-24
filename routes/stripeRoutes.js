@@ -22,7 +22,7 @@ router.post("/create-checkout-session", async (req, res) => {
 
     for (const item of items) {
       const dbImage = await db("images")
-        .select("id", "price", "title", "filename")
+        .select("id", "title", "filename")
         .where({ id: item.id })
         .first();
 
@@ -30,15 +30,25 @@ router.post("/create-checkout-session", async (req, res) => {
         return res.status(400).json({ error: `Image not found for ID: ${item.id}` });
       }
 
-      const price = parseFloat(dbImage.price);
+      const dbSize = await db("print_sizes")
+        .select("id", "label", "price")
+        .where({ id: item.print_size_id })
+        .first();
+
+      if (!dbSize) {
+        return res.status(400).json({ error: `Print size not found for ID: ${item.print_size_id}` });
+      }
+
+      const price = parseFloat(dbSize.price);
       const quantity = parseInt(item.quantity || 1);
       totalAmount += price * quantity;
 
       validatedItems.push({
         image_id: dbImage.id,
+        print_size_id: dbSize.id,
         quantity,
         price_at_purchase: price,
-        item_name: dbImage.title || dbImage.filename,
+        item_name: `${dbImage.title || dbImage.filename} (${dbSize.label})`,
       });
     }
 
@@ -72,6 +82,7 @@ router.post("/create-checkout-session", async (req, res) => {
       await db("order_items").insert({
         order_id: orderId,
         image_id: item.image_id,
+        print_size_id: item.print_size_id, // ✅ this fixes the previous SQL error
         quantity: item.quantity,
         price_at_purchase: item.price_at_purchase,
         item_name: item.item_name,
@@ -98,56 +109,13 @@ router.post("/create-checkout-session", async (req, res) => {
     res.json({ sessionId: session.id });
   } catch (error) {
     console.error("Stripe session creation failed:", error);
-    res.status(500).json({ error: "Failed to create payment session.", details: error.message });
+    res.status(500).json({
+      error: "Failed to create payment session.",
+      details: error.message,
+    });
   }
 });
 
-// Test route to simulate order and generate a PDF invoice
-router.post("/test-invoice", async (req, res) => {
-  const { name, email } = req.body;
 
-  const orderId = Math.floor(Math.random() * 100000); // Fake order ID
-  const orderData = {
-    id: orderId,
-    customer_name: name || "Test User",
-    customer_email: email || "test@example.com",
-    items: [
-      { item_name: "Portrait 1", quantity: 1, price_at_purchase: 40 },
-      { item_name: "Landscape 2", quantity: 2, price_at_purchase: 60 },
-    ],
-    total_amount: 160,
-  };
-
-  const invoicePath = `/tmp/Invoice-${orderId}.pdf`;
-
-  try {
-    await require("../utils/invoice")(orderData, invoicePath);
-
-    console.log(`✅ PDF generated at: ${invoicePath}`);
-
-    // Optional: send it by email too
-    if (req.transporter) {
-      await req.transporter.sendMail({
-        from: `"Joshua Jey Photography" <${process.env.EMAIL_USER}>`,
-        to: email || process.env.EMAIL_TO, // fallback recipient
-        subject: "Test Invoice PDF",
-        html: `<p>This is a test email with a generated PDF invoice.</p>`,
-        attachments: [
-          {
-            filename: `Invoice-${orderId}.pdf`,
-            path: invoicePath,
-          },
-        ],
-      });
-
-      console.log("✅ Test email sent");
-    }
-
-    res.json({ success: true, invoicePath });
-  } catch (err) {
-    console.error("❌ Failed to generate invoice:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
 
 module.exports = router;
