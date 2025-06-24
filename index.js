@@ -13,7 +13,7 @@ const helmet = require('helmet');
 
 // --- Middleware ---
 const allowedOrigins = [
-  'http://localhost:5173', // Vite dev server
+  'http://localhost:5175', // Vite dev server
   'https://joshuajeyphotography.com', // Your deployed site
   'https://joshuajeyphotographycom.netlify.app',
   'https://www.joshuajeyphotography.com'
