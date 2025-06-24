@@ -54,7 +54,7 @@ router.post("/create-checkout-session", async (req, res) => {
 
     const line_items = validatedItems.map((item) => ({
       price_data: {
-        currency: "usd",
+        currency: "cad",
         product_data: { name: item.item_name },
         unit_amount: Math.round(item.price_at_purchase * 100),
       },
@@ -65,7 +65,13 @@ router.post("/create-checkout-session", async (req, res) => {
       payment_method_types: ["card"],
       line_items,
       mode: "payment",
+      shipping_options: [
+        { shipping_rate: process.env.INTERNATIONAL_SHIPPING },
+        { shipping_rate: process.env.EXPRESS_SHIPPING },
+        { shipping_rate: process.env.STANDARD_SHIPPING },
+      ],
       customer_email: customer.email,
+      automatic_tax: { enabled: true },
       success_url: `${process.env.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.CLIENT_URL}/payment-cancelled`,
     });
