@@ -11,20 +11,6 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const helmet = require('helmet');
 
-
-// --- Import Routes ---
-const galleryRoutes = require('./routes/galleryRoutes');
-const contactRoutes = require('./routes/contactRoutes');
-const stripeRoutes = require('./routes/stripeRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-const printRoutes = require('./routes/printRoutes');
-const authRoutes = require('./routes/authRoutes');
-const cartRoutes = require('./routes/cartRoutes');
-
-
-
-
-
 // --- Middleware ---
 const allowedOrigins = [
   'http://localhost:5173', // Vite dev server
@@ -33,9 +19,6 @@ const allowedOrigins = [
   'https://www.joshuajeyphotography.com'
 
 ];
-
-
-
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl)
@@ -50,10 +33,16 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json()); 
-
+app.use(express.json());
 app.use(helmet());
-
+// --- Import Routes ---
+const galleryRoutes = require('./routes/galleryRoutes');
+const contactRoutes = require('./routes/contactRoutes');
+const stripeRoutes = require('./routes/stripeRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const printRoutes = require('./routes/printRoutes');
+const authRoutes = require('./routes/authRoutes');
+const cartRoutes = require('./routes/cartRoutes');
 
 // --- Nodemailer Transporter Setup ---
 let transporter;
@@ -104,7 +93,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/print', printRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/cart', cartRoutes);
-
+  
 // --- Serve static files from the public directory ---
 // app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
 
