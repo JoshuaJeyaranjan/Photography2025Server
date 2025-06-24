@@ -55,15 +55,21 @@ totalAmount += itemTotal + taxAmount;
     const shippingCost = parseInt(req.body.shipping_cost || 0); // In cents
     totalAmount += shippingCost / 100;
 
-    const line_items = validatedItems.map((item) => ({
-      price_data: {
-        currency: "cad",
-        product_data: { name: item.item_name },
-        unit_amount: Math.round(item.price_at_purchase * 100),
-      },
-      quantity: item.quantity,
-    }));
-
+    const line_items = validatedItems.map((item) => {
+      const priceWithTax = item.price_at_purchase * 1.13;
+    
+      return {
+        price_data: {
+          currency: "cad",
+          product_data: {
+            name: item.item_name,
+            description: `Includes 13% tax`, // optional clarity
+          },
+          unit_amount: Math.round(priceWithTax * 100),
+        },
+        quantity: item.quantity,
+      };
+    });
     if (!req.body.shipping_rate) {
       return res.status(400).json({ error: "Missing shipping rate selection." });
     }
