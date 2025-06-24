@@ -6,14 +6,14 @@ const router = express.Router();
 
 // GET /api/cart → fetch user's cart
 router.get('/', authenticateJWT, async (req, res) => {
-  const userId = req.user.userId;
+  const userId = req.userId;
   const items = await db('cart_items').where({ user_id: userId });
   res.json(items);
 });
 
 // POST /api/cart → add/update item
 router.post('/', authenticateJWT, async (req, res) => {
-  const userId = req.user.userId;
+  const userId = req.userId;
   const { image_id, print_size_id, quantity } = req.body;
   // upsert
   const existing = await db('cart_items')
@@ -32,7 +32,7 @@ router.post('/', authenticateJWT, async (req, res) => {
 
 // DELETE /api/cart/:itemId → remove item
 router.delete('/:itemId', authenticateJWT, async (req, res) => {
-  const userId = req.user.userId;
+  const userId = req.userId;
   const { itemId } = req.params;
   await db('cart_items').where({ id: itemId, user_id: userId }).del();
   const items = await db('cart_items').where({ user_id: userId });
