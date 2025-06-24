@@ -19,6 +19,7 @@ const stripeRoutes = require('./routes/stripeRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const printRoutes = require('./routes/printRoutes');
 const authRoutes = require('./routes/authRoutes');
+const cartRoutes = require('./routes/cartRoutes');
 
 
 
@@ -102,6 +103,7 @@ app.use('/api/stripe', stripeRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/print', printRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/cart', cartRoutes);
 
 // --- Serve static files from the public directory ---
 // app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
