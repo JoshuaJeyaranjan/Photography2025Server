@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 const fs = require("fs");
-const authenticateJWT = require('../middleware/authenticateJWT');
+const authenticateJWT = require('../middleware/authenticateJWT'); // Ensures user is logged in
+const checkAdmin = require('../middleware/checkAdmin'); // Ensures user is an admin
 
 router.post("/create-checkout-session", async (req, res) => {
   console.log("=== STRIPE SESSION START ===");
@@ -150,25 +151,6 @@ router.get("/order/by-session/:sessionId", async (req, res) => {
   }
 });
 
-// Middleware to check for admin privileges.
-// This should be used after authenticateJWT has run.
-const checkAdmin = async (req, res, next) => {
-  if (!req.userId) {
-    // This case should ideally be caught by authenticateJWT first
-    return res.status(401).json({ error: 'Authentication required.' });
-  }
-  try {
-    const user = await db('users').where({ id: req.userId }).select('is_admin').first();
-    if (user && user.is_admin) {
-      return next(); // User is an admin, proceed
-    }
-    return res.status(403).json({ error: 'Forbidden. Admin access required.' });
-  } catch (error) {
-    console.error('Admin check failed:', error);
-    return res.status(500).json({ error: 'Internal server error during authorization.' });
-  }
-};
-
 // GET /api/stripe/orders - Fetches all orders (Admin Only)
 router.get('/orders', authenticateJWT, checkAdmin, async (req, res) => {
   try {
@@ -178,7 +160,10 @@ router.get('/orders', authenticateJWT, checkAdmin, async (req, res) => {
         'customer_name',
         'customer_email',
         'total_amount',
+        'order_status',
+        'stripe_session_id',
         'created_at',
+        'updated_at'
       )
       .orderBy('created_at', 'desc');
     res.json(orders);
