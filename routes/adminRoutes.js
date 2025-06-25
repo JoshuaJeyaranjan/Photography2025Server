@@ -26,12 +26,6 @@ const upload = multer({
   }
 });
 
-// Middleware to check if user is authenticated (you'll need to implement this)
-const isAuthenticated = (req, res, next) => {
-  // TODO: Implement authentication check
-  next();
-};
-
 // Get about section content
 router.get('/about', async (req, res) => {
   try {

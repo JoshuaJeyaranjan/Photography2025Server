@@ -26,6 +26,4 @@ const checkAdmin = async (req, res, next) => {
     }
   };
 
-  checkAdmin();
-
 module.exports = checkAdmin;
