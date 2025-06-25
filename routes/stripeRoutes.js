@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 const fs = require("fs");
+const authenticateJWT = require('../middleware/authenticateJWT');
 
 router.post("/create-checkout-session", async (req, res) => {
   console.log("=== STRIPE SESSION START ===");
@@ -116,6 +117,74 @@ totalAmount += itemTotal + taxAmount;
       error: "Failed to create payment session.",
       details: error.message,
     });
+  }
+});
+
+router.get("/order/by-session/:sessionId", async (req, res) => {
+  const { sessionId } = req.params;
+  const db = req.db;
+
+  if (!sessionId) {
+    return res.status(400).json({ error: "Session ID is required." });
+  }
+
+  try {
+    // Find the order using the Stripe session ID
+    const order = await db("orders")
+      .where({ stripe_session_id: sessionId })
+      .first();
+
+    if (!order) {
+      // In your current flow, the order is created before redirection,
+      // so a 404 is appropriate if it's not found.
+      return res.status(404).json({ error: "Order not found." });
+    }
+
+    // Find the associated items for that order
+    const items = await db("order_items").where({ order_id: order.id });
+
+    res.json({ order, items });
+  } catch (error) {
+    console.error(`Error fetching order by session ID ${sessionId}:`, error);
+    res.status(500).json({ error: "Failed to retrieve order details." });
+  }
+});
+
+// Middleware to check for admin privileges.
+// This should be used after authenticateJWT has run.
+const checkAdmin = async (req, res, next) => {
+  if (!req.userId) {
+    // This case should ideally be caught by authenticateJWT first
+    return res.status(401).json({ error: 'Authentication required.' });
+  }
+  try {
+    const user = await db('users').where({ id: req.userId }).select('is_admin').first();
+    if (user && user.is_admin) {
+      return next(); // User is an admin, proceed
+    }
+    return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+  } catch (error) {
+    console.error('Admin check failed:', error);
+    return res.status(500).json({ error: 'Internal server error during authorization.' });
+  }
+};
+
+// GET /api/stripe/orders - Fetches all orders (Admin Only)
+router.get('/orders', authenticateJWT, checkAdmin, async (req, res) => {
+  try {
+    const orders = await db('orders')
+      .select(
+        'id',
+        'customer_name',
+        'customer_email',
+        'total_amount',
+        'created_at',
+      )
+      .orderBy('created_at', 'desc');
+    res.json(orders);
+  } catch (error) {
+    console.error('Error fetching all orders:', error);
+    res.status(500).json({ error: 'Failed to retrieve orders.' });
   }
 });
 
