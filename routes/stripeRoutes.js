@@ -120,7 +120,6 @@ totalAmount += itemTotal + taxAmount;
     });
   }
 });
-
 router.get("/order/by-session/:sessionId", async (req, res) => {
   const { sessionId } = req.params;
   const db = req.db;
