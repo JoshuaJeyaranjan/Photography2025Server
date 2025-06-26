@@ -12,7 +12,7 @@ function authenticateJWT(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, SECRET);
-    req.userId = decoded.userId;
+    req.userId = decoded.id;
     req.userEmail = decoded.email;
     req.isAdmin = decoded.is_admin;
     next();
