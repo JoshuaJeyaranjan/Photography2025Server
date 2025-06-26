@@ -161,10 +161,9 @@ router.get('/orders', authenticateJWT, checkAdmin, async (req, res) => {
         'customer_name',
         'customer_email',
         'total_amount',
-        'shipping_amount',
-        'tax_amount',
+    
         'order_status',
-        'stripe_session_id',
+    
         'created_at',
         'updated_at'
       )
