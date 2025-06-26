@@ -155,18 +155,36 @@ router.get('/orders', authenticateJWT, checkAdmin, async (req, res) => {
   try {
     console.log('✅ Entered /api/stripe/orders route');
 
-    const orders = await db('orders')
-      .select('id', 'customer_email', 'total_amount')
+    // Select all the fields the frontend needs for display
+    const orders = await db('orders').select( // This is the correct and only query for base orders
+        'id',
+        'customer_name',
+        'customer_email',
+        'total_amount',
+        'shipping_amount',
+        'tax_amount',
+        'order_status',
+        'stripe_session_id',
+        'created_at',
+        'updated_at'
+      )
       .orderBy('created_at', 'desc');
 
-    console.log(`✅ Retrieved ${orders.length} orders`);
-    res.json(orders);
+    console.log(`✅ Retrieved ${orders.length} base orders`);
+    
+    // For each order, fetch its associated items and bundle them together
+    const ordersWithItems = await Promise.all(orders.map(async (order) => {
+      const items = await db('order_items').where({ order_id: order.id });
+      return { order, items }; // This structure matches the frontend's expectation
+    }));
+
+    console.log(`✅ Retrieved and formatted ${ordersWithItems.length} orders with items`);
+    res.json(ordersWithItems); // Send the combined data once
   } catch (error) {
     console.error('❌ Error in /orders route:', error);
     res.status(500).json({ error: 'Internal server error in /orders route.' });
-    }
-});
-
+  }
+}); // Added missing closing brace for the router.get callback
 
 
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
