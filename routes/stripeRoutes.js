@@ -153,24 +153,21 @@ router.get("/order/by-session/:sessionId", async (req, res) => {
 // GET /api/stripe/orders - Fetches all orders (Admin Only)
 router.get('/orders', authenticateJWT, checkAdmin, async (req, res) => {
   try {
+    console.log('✅ Entered /api/stripe/orders route');
+
     const orders = await db('orders')
-      .select(
-        'id',
-        'customer_name',
-        'customer_email',
-        'total_amount',
-        'order_status',
-        'stripe_session_id',
-        'created_at',
-        'updated_at'
-      )
+      .select('id', 'customer_email', 'total_amount')
       .orderBy('created_at', 'desc');
+
+    console.log(`✅ Retrieved ${orders.length} orders`);
     res.json(orders);
   } catch (error) {
-    console.error('Error fetching all orders:', error);
-    res.status(500).json({ error: 'Failed to retrieve orders.' });
-  }
+    console.error('❌ Error in /orders route:', error);
+    res.status(500).json({ error: 'Internal server error in /orders route.' });
+    }
 });
+
+
 
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const stripe = req.stripe;
