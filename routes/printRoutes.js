@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-// Use the db instance from req (middleware already attaches it), so no need to import db directly here
-
 // GET /api/print-sizes
 router.get('/print-sizes', async (req, res) => {
   try {

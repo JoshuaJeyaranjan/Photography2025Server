@@ -30,7 +30,7 @@ router.post('/', async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
-    console.log('Contact email sent successfully.');
+    
     res.status(200).json({ message: 'Message sent successfully! Thank you for reaching out.' });
   } catch (error) {
     console.error('Error processing contact form or sending email:', error);

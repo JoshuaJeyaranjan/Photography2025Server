@@ -8,14 +8,10 @@ const knex = require('knex')(knexConfig[process.env.NODE_ENV || 'development']);
 const imagesDirectory = path.join(__dirname, '..', 'public', 'images'); // Adjusted path to images directory
 const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']; // Add or remove extensions as needed
 
-console.log(`Script __dirname: ${__dirname}`);
-console.log(`Attempting to load .env from: ${path.resolve(__dirname, '../.env')}`);
-console.log(`Knexfile path: ${path.resolve(__dirname, '../knexfile.js')}`);
-console.log(`Images directory path: ${imagesDirectory}`);
 
 async function seedDatabaseWithImages() {
   try {
-    console.log(`Reading image files from: ${imagesDirectory}`);
+   
     const filesInDirectory = await fs.readdir(imagesDirectory);
 
     const imageFilenames = filesInDirectory.filter(file => {
@@ -24,18 +20,18 @@ async function seedDatabaseWithImages() {
     });
 
     if (imageFilenames.length === 0) {
-      console.log('No new image files found in the directory to seed.');
+     
       return;
     }
 
-    console.log(`Found ${imageFilenames.length} image files. Checking database...`);
+    
 
     for (const filename of imageFilenames) {
       // Check if the image already exists in the database
       const existingImage = await knex('images').where({ filename: filename }).first();
 
       if (existingImage) {
-        console.log(`Image "${filename}" already exists in the database. Skipping.`);
+       
         continue;
       }
 
@@ -60,17 +56,17 @@ async function seedDatabaseWithImages() {
       };
 
       await knex('images').insert(imageData);
-      console.log(`Added "${filename}" to the database.`);
+      
     }
 
-    console.log('Image seeding process completed.');
+   
 
   } catch (error) {
     console.error('Error during image seeding process:', error);
   } finally {
     // Ensure the database connection is closed
     await knex.destroy();
-    console.log('Database connection closed.');
+    
   }
 }
 
