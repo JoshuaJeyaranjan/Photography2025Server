@@ -54,7 +54,7 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
       pass: process.env.EMAIL_PASS,
     },
   });
-  console.log('Nodemailer transporter configured.');
+  
 } else {
   console.warn('Nodemailer not configured. EMAIL_USER or EMAIL_PASS missing in .env');
 }
@@ -66,7 +66,7 @@ const imagesDirectory = path.join(__dirname, 'public', 'images');
 // Create the directory if it doesn't exist (for first-time setup)
 if (!fs.existsSync(imagesDirectory)) {
   fs.mkdirSync(imagesDirectory, { recursive: true });
-  console.log(`Created images directory at ${imagesDirectory}`);
+  
   // You would then manually add your images to this folder
   // e.g., server/public/images/portrait_example_1.jpg
 }
