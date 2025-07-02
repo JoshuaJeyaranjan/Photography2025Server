@@ -24,7 +24,6 @@ router.get("/my-orders", authenticateJWT, async (req, res) => {
       return res.json([]);
     }
 
-    // Join in print size and image details
     const orderItems = await db("order_items as oi")
       .join("images as img", "oi.image_id", "img.id")
       .join("print_sizes as ps", "oi.print_size_id", "ps.id")
@@ -32,11 +31,13 @@ router.get("/my-orders", authenticateJWT, async (req, res) => {
         "oi.*",
         "img.filename",
         "img.title",
+        "img.category",
         "ps.label as print_size_label"
       )
       .whereIn("oi.order_id", orderIds);
 
-    // Group items by order
+    const BASE_URL = "https://media.joshuajeyphotography.com/";
+
     const grouped = orders.map((order) => {
       const formattedDate = new Date(order.order_date).toLocaleString("en-US", {
         year: "numeric",
@@ -46,20 +47,22 @@ router.get("/my-orders", authenticateJWT, async (req, res) => {
         minute: "2-digit",
       });
 
+      const items = orderItems
+        .filter((item) => item.order_id === order.id)
+        .map((item) => ({
+          id: item.id,
+          image_id: item.image_id,
+          title: item.title,
+          preview_url: `${BASE_URL}${item.category}/${item.filename}`,
+          quantity: item.quantity,
+          price_at_purchase: item.price_at_purchase,
+          print_size_label: item.print_size_label,
+        }));
+
       return {
         ...order,
         formatted_date: formattedDate,
-        items: orderItems
-          .filter((item) => item.order_id === order.id)
-          .map((item) => ({
-            id: item.id,
-            image_id: item.image_id,
-            title: item.title,
-            preview_url: `https://media.joshuajeyphotography.com/${item.filename}`,
-            quantity: item.quantity,
-            price_at_purchase: item.price_at_purchase,
-            print_size_label: item.print_size_label,
-          })),
+        items,
       };
     });
 
