@@ -38,6 +38,10 @@ router.get("/my-orders", authenticateJWT, async (req, res) => {
 
     const BASE_URL = "https://media.joshuajeyphotography.com/";
 
+    const categoryPathMap = {
+        portrait: 'portraits'
+    }
+
     const grouped = orders.map((order) => {
       const formattedDate = new Date(order.order_date).toLocaleString("en-US", {
         year: "numeric",
@@ -53,7 +57,7 @@ router.get("/my-orders", authenticateJWT, async (req, res) => {
           id: item.id,
           image_id: item.image_id,
           title: item.title,
-          preview_url: `${BASE_URL}${item.category}s/${item.filename}`,
+          preview_url: `${BASE_URL}${categoryPathMap[item.category]}/${item.filename}`,
           quantity: item.quantity,
           price_at_purchase: item.price_at_purchase,
           print_size_label: item.print_size_label,
