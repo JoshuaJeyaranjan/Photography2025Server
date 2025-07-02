@@ -54,7 +54,8 @@ router.post("/create-checkout-session", async (req, res) => {
         item_name: `${dbImage.title || dbImage.filename} (${dbSize.label})`,
       });
     }
-    const shippingCost = parseInt(req.body.shipping_cost || 0); // In cents
+
+    const shippingCost = parseInt(req.body.shipping_cost || 0);
     totalAmount += shippingCost / 100;
 
     const line_items = validatedItems.map((item) => {
@@ -65,13 +66,14 @@ router.post("/create-checkout-session", async (req, res) => {
           currency: "cad",
           product_data: {
             name: item.item_name,
-            description: `Includes 13% tax`, // optional clarity
+            description: `Includes 13% tax`,
           },
           unit_amount: Math.round(priceWithTax * 100),
         },
         quantity: item.quantity,
       };
     });
+
     if (!req.body.shipping_rate) {
       return res
         .status(400)
@@ -85,25 +87,34 @@ router.post("/create-checkout-session", async (req, res) => {
       shipping_options: [{ shipping_rate: req.body.shipping_rate }],
       customer_email: customer.email,
       shipping_address_collection: {
-        allowed_countries: ["US", "CA"], // Add others as needed
+        allowed_countries: ["US", "CA"],
       },
       success_url: `${process.env.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.CLIENT_URL}/payment-cancelled`,
     });
 
-    const [orderId] = await db("orders").insert({
+    // 👇 Prepare base order data
+    const newOrder = {
       customer_name: customer.name,
       customer_email: customer.email,
       total_amount: totalAmount,
       stripe_session_id: session.id,
       order_status: "pending",
-    });
+    };
+
+    // 👇 If user is logged in, include user_id
+    if (req.userId) {
+      newOrder.user_id = req.userId;
+    }
+
+    // 👇 Insert order and get the order ID
+    const [orderId] = await db("orders").insert(newOrder);
 
     for (const item of validatedItems) {
       await db("order_items").insert({
         order_id: orderId,
         image_id: item.image_id,
-        print_size_id: item.print_size_id, // ✅ this fixes the previous SQL error
+        print_size_id: item.print_size_id,
         quantity: item.quantity,
         price_at_purchase: item.price_at_purchase,
         item_name: item.item_name,
