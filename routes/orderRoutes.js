@@ -53,7 +53,7 @@ router.get("/my-orders", authenticateJWT, async (req, res) => {
           id: item.id,
           image_id: item.image_id,
           title: item.title,
-          preview_url: `${BASE_URL}${item.category}/${item.filename}`,
+          preview_url: `${BASE_URL}${item.category}s/${item.filename}`,
           quantity: item.quantity,
           price_at_purchase: item.price_at_purchase,
           print_size_label: item.print_size_label,
