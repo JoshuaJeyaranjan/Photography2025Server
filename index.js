@@ -43,6 +43,8 @@ const adminRoutes = require('./routes/adminRoutes');
 const printRoutes = require('./routes/printRoutes');
 const authRoutes = require('./routes/authRoutes');
 const cartRoutes = require('./routes/cartRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+
 
 // --- Nodemailer Transporter Setup ---
 let transporter;
@@ -93,6 +95,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/print', printRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
   
 // --- Serve static files from the public directory ---
 // app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
