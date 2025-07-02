@@ -39,7 +39,8 @@ router.get("/my-orders", authenticateJWT, async (req, res) => {
     const BASE_URL = "https://media.joshuajeyphotography.com/";
 
     const categoryPathMap = {
-        portrait: 'portraits'
+        portrait: 'portraits',
+        prints: 'prints',
     }
 
     const grouped = orders.map((order) => {
