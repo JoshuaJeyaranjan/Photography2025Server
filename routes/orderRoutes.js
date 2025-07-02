@@ -6,32 +6,26 @@ const authenticateJWT = require("../middleware/authenticateJWT");
 
 router.get("/my-orders", authenticateJWT, async (req, res) => {
     try {
-      const user = req.user;
+      const { userId, userEmail } = req;
   
-      // Step 1: Find orders that belong to this user
       let ordersQuery = db("orders").orderBy("order_date", "desc");
   
-      if (user.id) {
-        // Preferred: logged in with user_id
-        ordersQuery = ordersQuery.where("user_id", user.id);
-      } else if (user.email) {
-        // Fallback: match on email (guests)
-        ordersQuery = ordersQuery.where("customer_email", user.email);
+      if (userId) {
+        ordersQuery = ordersQuery.where("user_id", userId);
+      } else if (userEmail) {
+        ordersQuery = ordersQuery.where("customer_email", userEmail);
       } else {
         return res.status(400).json({ error: "No user ID or email found" });
       }
   
       const orders = await ordersQuery;
-  
       const orderIds = orders.map((o) => o.id);
   
       if (orderIds.length === 0) {
-        return res.json([]); // no orders yet
+        return res.json([]);
       }
   
-      const orderItems = await db("order_items")
-        .whereIn("order_id", orderIds)
-        .select("*");
+      const orderItems = await db("order_items").whereIn("order_id", orderIds).select("*");
   
       const grouped = orders.map((order) => ({
         ...order,
